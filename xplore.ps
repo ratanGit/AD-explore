@@ -1,38 +1,45 @@
+#Ratan Mohapatra. Basic AD exploration
+cls
 function xploreDomain{
     
-    $resFSMO =[ordered]@{
-        
-        '...> FOREST.....' = $('.'*20)
+    $resAD =[ordered]@{
         ForestMode = ""
+        DomainMode = ""
+        ResplicationSites = @()
         DomainNamingMaster = ""
         SchemaMaster = ""
-
-        '...> Domain.....' = $('.'*20)
-        DomainMode = ""
         InfrastructureMaster = ""
         PDCEmulator = ""   
-        RIDMaster = ""
-        DomainControllers = @()        
+        RIDMaster = ""       
         }    
     
     $res = $null
-    $res = $(get-adforest | select Domains, ForestMode, *master*)
+    $res = get-adforest
 
-        $resFSMO.ForestMode = $res.ForestMode
-        $resFSMO.DomainNamingMaster = $res.DomainNamingMaster
-        $resFSMO.SchemaMaster= $res.SchemaMaster
+        $resAD.ForestMode = $res.ForestMode
+        $resAD.DomainNamingMaster = $res.DomainNamingMaster
+        $resAD.SchemaMaster= $res.SchemaMaster
+        $resAD.ResplicationSites = $res.Sites
+    $res = get-addomain #| select DomainMode, *master*, *emulator*)
+        $resAD.DomainMode = $res.DomainMode
+        $resAD.InfrastructureMaster = $res.InfrastructureMaster
+        $resAD.RIDMaster = $res.RIDMaster
+        $resAD.PDCEmulator = $res.PDCEmulator
 
-    $res = $null
-    $res = $(get-addomain | select DomainMode, *master*, *emulator*)
+    $dcs = $(Get-ADDomainController -Filter * | select Name, Site, IPv4Address | ft -AutoSize | Out-String)
+    
+    #replication:
+    $sites = Get-ADReplicationSite -Filter * | select Name, Distinguish* | ft -AutoSize | Out-String
+    $sitelinks = Get-ADReplicationSiteLink -Filter * | select Name, ReplicationFrequencyInMinutes, SitesIncluded | ft -AutoSize | Out-String
+    $replication_subnets = Get-ADReplicationSubnet -Filter * | select Name, Site, Distinguish* | ft -AutoSize | Out-String
 
-        $resFSMO.DomainMode = $res.DomainMode
-        $resFSMO.InfrastructureMaster = $res.InfrastructureMaster
-        $resFSMO.RIDMaster = $res.RIDMaster
-        $resFSMO.PDCEmulator = $res.PDCEmulator
+    #check lter
+    #$res = Get-ADReplicationConnection -Filter *
 
-    $resFSMO.DomainControllers = $(Get-ADDomainController -Filter * | select Name, Site, IPv4Address)
+    $res = ""
+    $res = "`n>BASIC Info:`n{0}>AD-DomainControllers:`n{1}>AD-Replication Info:`n`nSites:{2}SiteLinks:{3}ReplicationSubnets:{4}" -f $($resAD | Out-String ), $dcs, $sites,$sitelinks,$replication_subnets
 
-    return ($resFSMO | Out-String)
+    return $res
 
     }
 xploreDomain
