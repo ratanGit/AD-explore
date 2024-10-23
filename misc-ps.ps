@@ -1,0 +1,10 @@
+#Windows update
+ gcim Win32_QuickFixEngineering | ft -AutoSize
+ gcim win32_bios
+
+#POwershell remoting using the logged-on user cred
+Enter-PSSession -ComputerName <hostname>
+
+#ondemand cred
+Enter-PSSession -ComputerName <hostname> -credential
+ 
