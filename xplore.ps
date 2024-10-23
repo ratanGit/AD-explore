@@ -1,0 +1,38 @@
+function xploreDomain{
+    
+    $resFSMO =[ordered]@{
+        
+        '...> FOREST.....' = $('.'*20)
+        ForestMode = ""
+        DomainNamingMaster = ""
+        SchemaMaster = ""
+
+        '...> Domain.....' = $('.'*20)
+        DomainMode = ""
+        InfrastructureMaster = ""
+        PDCEmulator = ""   
+        RIDMaster = ""
+        DomainControllers = @()        
+        }    
+    
+    $res = $null
+    $res = $(get-adforest | select Domains, ForestMode, *master*)
+
+        $resFSMO.ForestMode = $res.ForestMode
+        $resFSMO.DomainNamingMaster = $res.DomainNamingMaster
+        $resFSMO.SchemaMaster= $res.SchemaMaster
+
+    $res = $null
+    $res = $(get-addomain | select DomainMode, *master*, *emulator*)
+
+        $resFSMO.DomainMode = $res.DomainMode
+        $resFSMO.InfrastructureMaster = $res.InfrastructureMaster
+        $resFSMO.RIDMaster = $res.RIDMaster
+        $resFSMO.PDCEmulator = $res.PDCEmulator
+
+    $resFSMO.DomainControllers = $(Get-ADDomainController -Filter * | select Name, Site, IPv4Address)
+
+    return ($resFSMO | Out-String)
+
+    }
+xploreDomain
