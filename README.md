@@ -1,2 +1,2 @@
 # AD-explore
-AD exploration
+Retrieves the information about FSMO from AD
